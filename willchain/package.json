@@ -5,9 +5,11 @@
   "type": "module",
   "description": "Deploy scripts for the WillChain Intelligent Contract. See frontend/package.json for the dApp UI's own dependencies (kept separate on purpose).",
   "scripts": {
-    "deploy": "node scripts/deploy.mjs"
+    "deploy": "node scripts/deploy.mjs",
+    "deploy:bradbury": "node scripts/deploy.mjs --chain testnet_bradbury",
+    "deploy:studionet": "node scripts/deploy.mjs --chain studionet"
   },
   "dependencies": {
-    "genlayer-js": "latest"
+    "genlayer-js": ">=1.1.8"
   }
 }
