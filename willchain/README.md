@@ -34,8 +34,10 @@ willchain/
 
 ## 1. Install dependencies
 
-You need **Node.js ≥ 18**, **Python ≥ 3.10**, and **Docker ≥ 26** (only if
-you want to run a local GenVM simulator instead of Studio/testnet).
+You need **Node.js ≥ 18** and **Python ≥ 3.12** (the GenLayerPY SDK requires
+3.12+). **Docker ≥ 26** is only needed if you want to run a local GenVM
+simulator (localnet) — it is not needed to deploy to Testnet Bradbury, which
+is a live remote network.
 
 ```bash
 # 1. GenLayer CLI (global) — used to run/manage GenLayer Studio & localnet
