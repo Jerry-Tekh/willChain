@@ -20,7 +20,7 @@ testator's death, the contract executes the distributions itself.
 willchain/
 ├── contracts/willchain.py        # the Intelligent Contract (GenVM / Python)
 ├── test/test_willchain.py        # gltest end-to-end tests
-├── gltest.config.yaml            # localnet / studionet / testnet_asimov config
+├── gltest.config.yaml            # localnet / studionet / testnet_bradbury config
 ├── pytest.ini                    # registers the 'slow' test marker
 ├── scripts/deploy.mjs            # deploy via GenLayerJS (Node) — recommended
 ├── scripts/deploy_py.py          # deploy via GenLayerPY (Python) — alternative
@@ -70,55 +70,61 @@ sudo pacman -S libsecret               # Arch
 
 ---
 
-## 2. Deploying on GenLayer Studio ("studionet")
+## 2. Deploying on GenLayer Testnet Bradbury
 
-You asked specifically for **studionet**, GenLayer's hosted staging network —
-this is the fastest path and needs no local Docker stack.
+This build targets **Testnet Bradbury**, the live GenLayer testnet with real
+validators:
 
-### Option A — GenLayer Studio UI (zero dependencies beyond a browser)
-1. Go to the Studio referenced from https://portal.genlayer.foundation/builders/
-   (or run `genlayer up` to launch a local Studio instance pointed at
-   studionet — see `genlayer network` to switch networks).
-2. Create a new contract, paste in `contracts/willchain.py`.
-3. Deploy with empty constructor args (`WillChain.__init__` takes none).
-4. Copy the deployed contract address.
+| Field | Value |
+|---|---|
+| Network id | `testnet_bradbury` |
+| Chain id | `4221` |
+| RPC | `https://rpc-bradbury.genlayer.com` |
+| Explorer | `https://explorer-bradbury.genlayer.com` |
+| Native token | `GEN` (18 decimals) |
+
+Because Bradbury is a real network (not Studio), you **must** supply a funded
+account. Create a **root-level** `.env` (not `frontend/.env` — that's a
+separate file for the frontend, see step 3):
+```bash
+cp .env.example .env    # at the repo root
+# then edit .env and fill in a funded testnet account:
+#   PRIVATE_KEY=0x...
+#   ACCOUNT_ADDRESS=0x...
+```
+Fund the account first from the GenLayer testnet faucet (see
+https://docs.genlayer.com). Both deploy scripts load this root `.env`
+automatically (`scripts/deploy.mjs` via a small built-in parser,
+`scripts/deploy_py.py` via `python-dotenv`) and read `PRIVATE_KEY` — you don't
+need to `export` it into your shell.
+
+### Option A — Script (recommended for repeatable deploys)
+```bash
+python scripts/deploy_py.py --chain testnet_bradbury
+# or
+node scripts/deploy.mjs --chain testnet_bradbury
+```
+Both default to `testnet_bradbury`, so `--chain` can be omitted. Either prints
+the deployed contract address at the end — copy it.
 
 ### Option B — CLI
 ```bash
-genlayer network            # choose "studionet" when prompted
+genlayer network            # choose "testnet_bradbury" when prompted
 genlayer deploy --contract contracts/willchain.py --args
 ```
 
-### Option C — Script (recommended for repeatable deploys)
+### Running the tests against Bradbury
 ```bash
-node scripts/deploy.mjs --chain studionet
-# or
-python scripts/deploy_py.py --chain studionet
+gltest --network testnet_bradbury test/test_willchain.py
 ```
-Either prints the deployed contract address at the end — copy it.
+(`gltest.config.yaml` already has `testnet_bradbury` pre-configured as the
+default network.)
 
-### Running the tests against studionet
-```bash
-gltest --network studionet test/test_willchain.py
-```
-(`gltest.config.yaml` already has `studionet` pre-configured.)
-
-### Deploying to testnet_asimov later
-Same commands, `--chain testnet_asimov` / `--network testnet_asimov`, but you
-must fund real accounts first. Create a **root-level** `.env` (not
-`frontend/.env` — that's a separate file for the frontend, see step 3) with
-their private keys:
-```bash
-cp .env.example .env    # at the repo root
-# then edit .env and fill in:
-#   ACCOUNT_PRIVATE_KEY_1=0x...
-```
-Both deploy scripts load this root `.env` automatically
-(`scripts/deploy.mjs` via a small built-in parser, `scripts/deploy_py.py`
-via `python-dotenv`, already in `requirements.txt`) — you don't need to
-`export` the variables into your shell yourself. Studio/localnet
-auto-generate throwaway funded accounts for you if you don't set this;
-testnet_asimov does not.
+### Other networks
+`studionet` (hosted Studio) and `localnet` (local simulator) auto-provision
+throwaway funded accounts, so you can deploy there with `--chain studionet` /
+`--chain localnet` and no `.env`. `testnet_asimov` is the older testnet and
+still works with `--chain testnet_asimov` if you have a funded Asimov account.
 
 ---
 
