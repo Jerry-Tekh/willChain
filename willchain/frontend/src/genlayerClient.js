@@ -1,17 +1,18 @@
 import { createClient, createAccount } from "genlayer-js";
-import { localnet, studionet, testnetAsimov } from "genlayer-js/chains";
+import { localnet, studionet, testnetAsimov, testnetBradbury } from "genlayer-js/chains";
 import { TransactionStatus } from "genlayer-js/types";
 
 const CHAINS = {
   localnet,
   studionet,
   testnet_asimov: testnetAsimov,
+  testnet_bradbury: testnetBradbury,
 };
 
-const CHAIN_NAME = import.meta.env.VITE_WILLCHAIN_CHAIN || "studionet";
+const CHAIN_NAME = import.meta.env.VITE_WILLCHAIN_CHAIN || "testnet_bradbury";
 export const CONTRACT_ADDRESS = import.meta.env.VITE_WILLCHAIN_CONTRACT_ADDRESS || "";
 
-const chain = CHAINS[CHAIN_NAME] || studionet;
+const chain = CHAINS[CHAIN_NAME] || testnetBradbury;
 
 /**
  * Returns a GenLayerJS client.
