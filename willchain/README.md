@@ -447,9 +447,9 @@ during this pass, not recalled from memory) — plus what I fixed as a result.
   against `contracts/willchain.py` — a linter written by GenLayer's own
   team will catch GenVM-specific issues no amount of doc cross-referencing
   can substitute for.
-- Run `gltest --network studionet test/test_willchain.py` and confirm every
-  test actually passes in a live Studio instance — this repo's tests are
-  now written against the documented API, but "documented" and "what your
+- Run `gltest --network testnet_bradbury test/test_willchain.py` and confirm
+  every test actually passes against live Bradbury validators — this repo's
+  tests are now written against the documented API, but "documented" and "what your
   installed package version actually does" are not always the same thing.
   If `.call()`/`.transact()` errors with an `AttributeError`, see the note
   at the top of `test_willchain.py` for how to adapt.
@@ -466,6 +466,9 @@ during this pass, not recalled from memory) — plus what I fixed as a result.
 
 - https://docs.genlayer.com — Intelligent Contracts, storage rules,
   equivalence principles, GenLayerJS/GenLayerPY/gltest references
+- Testnet Bradbury (deploy target): chain id `4221`, RPC
+  `https://rpc-bradbury.genlayer.com`, explorer
+  `https://explorer-bradbury.genlayer.com`
 - https://portal.genlayer.foundation/builders/ — builder resources
 - https://skills.genlayer.com — the GenLayer Skills plugin for Claude Code
   (`claude /plugin marketplace add genlayerlabs/skills`)
