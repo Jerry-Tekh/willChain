@@ -4,6 +4,7 @@
 # Usage:
 #   gltest --network localnet    test/test_willchain.py
 #   gltest --network studionet   test/test_willchain.py
+#   gltest --network testnet_bradbury test/test_willchain.py (needs accounts below)
 #   gltest --network testnet_asimov test/test_willchain.py   (needs accounts below)
 #
 # HONESTY NOTE (please read before relying on this file):
@@ -27,7 +28,7 @@
 #      don't assume this is right without checking.
 
 networks:
-  default: studionet
+  default: testnet_bradbury
 
   localnet:
     url: "http://127.0.0.1:4000/api"  # verify against your local simulator's actual output — see note above
@@ -48,5 +49,16 @@ networks:
       - "${ACCOUNT_PRIVATE_KEY_2}"
       - "${ACCOUNT_PRIVATE_KEY_3}"
     from: "${ACCOUNT_PRIVATE_KEY_1}"
+
+  testnet_bradbury:
+    # The live GenLayer Testnet Bradbury (chain id 4221, RPC
+    # https://rpc-bradbury.genlayer.com). You must supply a real funded
+    # testnet account. This repo's root .env stores it as PRIVATE_KEY; the
+    # ${PRIVATE_KEY} interpolation below assumes gltest expands env vars in
+    # this position (see the HONESTY NOTE above — if it's read literally,
+    # pass the key another way per `gltest --help`).
+    accounts:
+      - "${PRIVATE_KEY}"
+    from: "${PRIVATE_KEY}"
 
 contracts_dir: contracts
