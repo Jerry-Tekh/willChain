@@ -261,7 +261,7 @@ released via `emit_transfer` in `_execute_will`). ERC‑20 (via LayerZero),
 NFTs, and other chains are extensions, not included in this build — wire
 them up as additional `beneficiary` fields (`asset_type`, `token_address`)
 plus the corresponding `contract_interface` calls once you've validated the
-native-token path on studionet.
+native-token path on testnet_bradbury.
 
 ---
 
