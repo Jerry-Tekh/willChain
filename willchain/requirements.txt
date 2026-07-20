@@ -1,5 +1,8 @@
-# GenLayer contract testing + Python deploy script
+# GenLayer contract testing + Python deploy script.
+# The Python deploy path (scripts/deploy_py.py --chain testnet_bradbury) is the
+# smallest-footprint way to deploy to Testnet Bradbury: genlayer-py pulls in
+# web3 only, versus the CLI which bundles a full JS SDK + Docker tooling.
 genlayer-test
-genlayer-py
+genlayer-py>=0.18.0   # first releases exporting the testnet_bradbury chain
 pytest
-python-dotenv
+python-dotenv>=1.0.0
