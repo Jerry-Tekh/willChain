@@ -130,17 +130,26 @@ still works with `--chain testnet_asimov` if you have a funded Asimov account.
 
 ## 3. Running the frontend
 
+The production frontend is hosted on Vercel at https://will-chain.vercel.app.
+After deploying the contract, set these two variables in the Vercel project's
+Environment Variables settings (then redeploy so the build picks them up):
+```
+VITE_WILLCHAIN_CONTRACT_ADDRESS=<address from step 2>
+VITE_WILLCHAIN_CHAIN=testnet_bradbury
+```
+
+To run it locally instead:
 ```bash
 cd frontend
 cp ../.env.example .env    # then edit .env:
 #   VITE_WILLCHAIN_CONTRACT_ADDRESS=<address from step 2>
-#   VITE_WILLCHAIN_CHAIN=studionet
+#   VITE_WILLCHAIN_CHAIN=testnet_bradbury
 npm install
 npm run dev
 ```
 Open the printed local URL. If MetaMask is installed it's used for signing;
 otherwise the app generates a throwaway in-memory session account (fine for
-studionet demos, **not** for anything holding real value).
+Bradbury testnet demos, **not** for anything holding real value).
 
 The UI is responsive at every width — header type scales fluidly
 (`clamp()`), the two-column will list/detail + create-will layout collapses
