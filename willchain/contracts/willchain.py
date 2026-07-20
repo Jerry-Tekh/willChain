@@ -3,13 +3,19 @@
 # WillChain — AI-Executed On-Chain Estate Management
 # GenLayer Intelligent Contract
 #
+# TARGET NETWORK: GenLayer Testnet Bradbury (chain id 4221,
+#   RPC https://rpc-bradbury.genlayer.com, explorer
+#   https://explorer-bradbury.genlayer.com). This is the live GenLayer
+#   testnet with real validators — not Studio/studionet.
+#
 # IMPORTANT (read before deploying to a real network):
 #   The "Depends" header above pins the GenVM Python runtime. "py-genlayer:test"
-#   is the tag used by GenLayer Studio and most published examples. For a
-#   testnet/production deployment you should pin an explicit runtime hash
+#   is the tag understood by the GenVM build currently running on Bradbury
+#   and by GenLayer Studio, and is what the published Bradbury examples use.
+#   If a future Bradbury runtime upgrade requires an explicit runtime hash
 #   instead, e.g.:
 #       # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
-#   Check https://docs.genlayer.com for the current recommended runtime hash
+#   check https://docs.genlayer.com for the current recommended runtime hash
 #   before you deploy real funds against this contract.
 #
 # SDK VERSION COMPATIBILITY:
@@ -19,7 +25,7 @@
 #     gl.exec_prompt(prompt)         gl.nondet.exec_prompt(prompt)
 #     gl.eq_principle_strict_eq(fn)  gl.eq_principle.strict_eq(fn)
 #     gl.ContractAt(addr)            gl.get_contract_at(addr)
-#   Which of these is actually live on a given Studio/studionet/testnet_asimov
+#   Which of these is actually live on a given Studio/testnet_bradbury
 #   deployment depends on which GenVM runtime build is running there, which
 #   is independent of what the "latest" docs describe. Rather than gambling
 #   on one API, this contract calls through the small compatibility shims
