@@ -10,6 +10,8 @@ const CHAINS = {
 };
 
 const CHAIN_NAME = import.meta.env.VITE_WILLCHAIN_CHAIN || "testnet_bradbury";
+// Exported so the UI can show which network it's talking to (Bradbury by default).
+export const CHAIN_LABEL = CHAIN_NAME;
 export const CONTRACT_ADDRESS = import.meta.env.VITE_WILLCHAIN_CONTRACT_ADDRESS || "";
 
 const chain = CHAINS[CHAIN_NAME] || testnetBradbury;
