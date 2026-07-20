@@ -13,7 +13,7 @@ import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 import { createClient, createAccount } from "genlayer-js";
-import { localnet, studionet, testnetAsimov } from "genlayer-js/chains";
+import { localnet, studionet, testnetAsimov, testnetBradbury } from "genlayer-js/chains";
 import { TransactionStatus } from "genlayer-js/types";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,11 +37,15 @@ function loadDotEnv() {
 }
 loadDotEnv();
 
-const CHAINS = { localnet, studionet, testnet_asimov: testnetAsimov };
+const CHAINS = { localnet, studionet, testnet_asimov: testnetAsimov, testnet_bradbury: testnetBradbury };
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const out = { chain: "studionet", privateKey: process.env.ACCOUNT_PRIVATE_KEY_1 };
+  const out = {
+    chain: "testnet_bradbury",
+    // Accept PRIVATE_KEY (this repo's .env) or ACCOUNT_PRIVATE_KEY_1 (.env.example).
+    privateKey: process.env.PRIVATE_KEY || process.env.ACCOUNT_PRIVATE_KEY_1,
+  };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--chain") out.chain = args[++i];
     if (args[i] === "--private-key") out.privateKey = args[++i];
@@ -104,7 +108,11 @@ async function main() {
 
   const contractAddress = receipt.data?.contract_address ?? receipt.data?.contractAddress;
   console.log("[4/4] Deployed. Contract address:", contractAddress);
-  console.log("\nSave this address — you'll need it for the frontend .env:");
+  if (chainName === "testnet_bradbury" && contractAddress) {
+    console.log(`      explorer: https://explorer-bradbury.genlayer.com/address/${contractAddress}`);
+  }
+  console.log("\nSave this address — set it as an env var (locally in frontend/.env,");
+  console.log("or in your Vercel project settings for the hosted dApp):");
   console.log(`  VITE_WILLCHAIN_CONTRACT_ADDRESS=${contractAddress}`);
   console.log(`  VITE_WILLCHAIN_CHAIN=${chainName}`);
 }
