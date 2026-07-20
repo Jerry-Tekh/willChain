@@ -1,0 +1,13 @@
+{
+  "name": "willchain",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Deploy scripts for the WillChain Intelligent Contract. See frontend/package.json for the dApp UI's own dependencies (kept separate on purpose).",
+  "scripts": {
+    "deploy": "node scripts/deploy.mjs"
+  },
+  "dependencies": {
+    "genlayer-js": "latest"
+  }
+}

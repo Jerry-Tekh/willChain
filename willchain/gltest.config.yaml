@@ -1,0 +1,52 @@
+# gltest configuration
+# Docs: https://docs.genlayer.com (search "GenLayer Testing Suite" / gltest)
+#
+# Usage:
+#   gltest --network localnet    test/test_willchain.py
+#   gltest --network studionet   test/test_willchain.py
+#   gltest --network testnet_asimov test/test_willchain.py   (needs accounts below)
+#
+# HONESTY NOTE (please read before relying on this file):
+# Two details below are my best-effort guess, not something I could verify
+# against a live gltest install (no network access in the sandbox this was
+# built in):
+#   1. The `${ACCOUNT_PRIVATE_KEY_1}`-style environment-variable
+#      interpolation syntax for `accounts:`/`from:` below. This is a common
+#      pattern in other YAML-based tools, but I did not confirm gltest's
+#      config loader actually expands it. If `gltest --network
+#      testnet_asimov ...` fails with something like "invalid private key:
+#      ${ACCOUNT_PRIVATE_KEY_1}" (i.e. it's being read as a literal string),
+#      your installed version doesn't support this — check
+#      `gltest --help` / the genlayer-test docs for the real way to supply
+#      accounts (it may want a `.env` it reads directly, real inline keys,
+#      or a `--account` CLI flag instead).
+#   2. `http://127.0.0.1:4000/api` as the localnet default. This is a
+#      reasonable guess based on commonly-referenced GenLayer local-simulator
+#      ports, but confirm the actual port/path with `genlayer network` or
+#      whatever your local `genlayer up`/localnet startup command prints —
+#      don't assume this is right without checking.
+
+networks:
+  default: studionet
+
+  localnet:
+    url: "http://127.0.0.1:4000/api"  # verify against your local simulator's actual output — see note above
+    leader_only: false
+
+  studionet:
+    # Pre-configured network — genlayer-test's docs describe accounts being
+    # auto-generated for networks like this, so no url/accounts are set here
+    # deliberately. Make sure GenLayer Studio is actually running first (see
+    # README "Deploying on GenLayer Studio").
+    leader_only: false
+
+  testnet_asimov:
+    # Pre-configured chain_type — you must supply real funded testnet
+    # accounts. See the "HONESTY NOTE" above about the interpolation syntax.
+    accounts:
+      - "${ACCOUNT_PRIVATE_KEY_1}"
+      - "${ACCOUNT_PRIVATE_KEY_2}"
+      - "${ACCOUNT_PRIVATE_KEY_3}"
+    from: "${ACCOUNT_PRIVATE_KEY_1}"
+
+contracts_dir: contracts

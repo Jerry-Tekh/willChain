@@ -1,0 +1,5 @@
+# GenLayer contract testing + Python deploy script
+genlayer-test
+genlayer-py
+pytest
+python-dotenv
