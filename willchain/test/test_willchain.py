@@ -2,7 +2,11 @@
 End-to-end tests for the WillChain Intelligent Contract, using the
 GenLayer Testing Suite (`gltest`).
 
-Run against Studio (recommended first target):
+Run against Testnet Bradbury (the deployment target for this repo):
+
+    gltest --network testnet_bradbury test/test_willchain.py
+
+Run against Studio (hosted, auto-provisioned accounts):
 
     gltest --network studionet test/test_willchain.py
 
