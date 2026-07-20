@@ -59,6 +59,17 @@ header p {
   overflow-wrap: anywhere;
 }
 
+.network-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #12233a;
+  border: 1px solid #274b74;
+  color: #7fb0e6;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
 .banner {
   background: #3a2b0f;
   border: 1px solid #8a6a1f;

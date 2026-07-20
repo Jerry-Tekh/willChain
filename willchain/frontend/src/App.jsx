@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { readWillChain, writeWillChain, appealTransaction, CONTRACT_ADDRESS } from "./genlayerClient.js";
+import { readWillChain, writeWillChain, appealTransaction, CONTRACT_ADDRESS, CHAIN_LABEL } from "./genlayerClient.js";
 
 function useWillIds() {
   const [ids, setIds] = useState([]);
@@ -517,7 +517,10 @@ export default function App() {
     <div className="app">
       <header>
         <h1>WillChain</h1>
-        <p className="muted">AI-executed on-chain estate management, built on GenLayer.</p>
+        <p className="muted">
+          AI-executed on-chain estate management, built on GenLayer.{" "}
+          <span className="network-badge">network: {CHAIN_LABEL}</span>
+        </p>
       </header>
 
       <Banner />
