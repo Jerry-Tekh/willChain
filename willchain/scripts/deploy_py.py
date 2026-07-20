@@ -33,25 +33,37 @@ except ImportError:
     pass  # python-dotenv not installed — fall back to real env vars only
 
 from genlayer_py import create_client
-from genlayer_py.chains import localnet, studionet, testnet_asimov
+from genlayer_py.chains import (
+    localnet,
+    studionet,
+    testnet_asimov,
+    testnet_bradbury,
+)
 
 
 CHAINS = {
     "localnet": localnet,
     "studionet": studionet,
     "testnet_asimov": testnet_asimov,
+    "testnet_bradbury": testnet_bradbury,
 }
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--chain", choices=CHAINS.keys(), default="studionet")
+    parser.add_argument("--chain", choices=CHAINS.keys(), default="testnet_bradbury")
     parser.add_argument(
         "--private-key",
-        default=os.environ.get("ACCOUNT_PRIVATE_KEY_1"),
+        # Accept several env var names so the same script works whether the
+        # root .env uses PRIVATE_KEY (this repo's .env), ACCOUNT_PRIVATE_KEY_1
+        # (the .env.example convention), or the key is passed explicitly.
+        default=(
+            os.environ.get("PRIVATE_KEY")
+            or os.environ.get("ACCOUNT_PRIVATE_KEY_1")
+        ),
         help="Private key of the deploying account (0x...). Required for "
-        "testnet_asimov. On studionet/localnet an account is auto-provisioned "
-        "if omitted.",
+        "testnet_bradbury / testnet_asimov. On studionet/localnet an account "
+        "is auto-provisioned if omitted.",
     )
     parser.add_argument(
         "--contract",
@@ -97,7 +109,11 @@ def main():
     )
     print(f"[4/4] Deployed. Contract address: {contract_address}")
     print()
-    print("Save this address — you'll need it for the frontend .env")
+    if args.chain == "testnet_bradbury" and contract_address:
+        print(f"Explorer: https://explorer-bradbury.genlayer.com/address/{contract_address}")
+        print()
+    print("Save this address. Set it as an environment variable on your host")
+    print("(e.g. Vercel project settings) so the frontend can find the contract:")
     print(f"  VITE_WILLCHAIN_CONTRACT_ADDRESS={contract_address}")
     print(f"  VITE_WILLCHAIN_CHAIN={args.chain}")
 
