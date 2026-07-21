@@ -16,19 +16,56 @@ export const CONTRACT_ADDRESS = import.meta.env.VITE_WILLCHAIN_CONTRACT_ADDRESS 
 
 const chain = CHAINS[CHAIN_NAME] || testnetBradbury;
 
+/** True if an injected EVM wallet (MetaMask etc.) is available in the browser. */
+export function hasInjectedWallet() {
+  return typeof window !== "undefined" && !!window.ethereum;
+}
+
+/**
+ * Returns the already-connected wallet address WITHOUT prompting, or null if
+ * no wallet is connected yet. Uses eth_accounts (silent) rather than
+ * eth_requestAccounts (which pops the MetaMask dialog).
+ */
+export async function getConnectedAddress() {
+  if (!hasInjectedWallet()) return null;
+  try {
+    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+    return accounts && accounts.length ? accounts[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Explicitly prompts the user to connect their wallet (MetaMask dialog) and
+ * returns the selected address. This backs the "Connect Wallet" button.
+ * Throws if no injected wallet is present.
+ */
+export async function connectWallet() {
+  if (!hasInjectedWallet()) {
+    throw new Error(
+      "No wallet detected. Install MetaMask (or another EVM wallet) to connect."
+    );
+  }
+  const [address] = await window.ethereum.request({
+    method: "eth_requestAccounts",
+  });
+  return address;
+}
+
 /**
  * Returns a GenLayerJS client.
  *
  * - If MetaMask (window.ethereum) is present, the client is created with the
- *   connected address and MetaMask handles signing.
+ *   connected address and MetaMask handles signing. If the wallet is not yet
+ *   authorized this triggers the connection prompt.
  * - Otherwise, a session-only burner account is generated in-memory
  *   (fine for localnet/studionet demos; NOT for real funds).
  */
 export async function getClient() {
-  if (typeof window !== "undefined" && window.ethereum) {
-    const [address] = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
+  if (hasInjectedWallet()) {
+    const address =
+      (await getConnectedAddress()) || (await connectWallet());
     return createClient({ chain, account: address });
   }
   if (!window.__willchainBurnerAccount) {
