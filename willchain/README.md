@@ -14,6 +14,18 @@ testator's death, the contract executes the distributions itself.
 
 ---
 
+## Live deployment
+
+- **Network:** GenLayer Testnet Bradbury (chain id 4221)
+- **Contract:** `0x8aBeD63ff6D9E07d7E1d404A17Fd71BE1fDE59fd`
+  ([explorer](https://explorer-bradbury.genlayer.com/address/0x8aBeD63ff6D9E07d7E1d404A17Fd71BE1fDE59fd))
+- **Frontend:** https://will-chain.vercel.app/
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for how to deploy and verify, and an
+important note on the Bradbury contract **source-size limit**.
+
+---
+
 ## 0. What's in this zip
 
 ```
@@ -24,6 +36,8 @@ willchain/
 ├── pytest.ini                    # registers the 'slow' test marker
 ├── scripts/deploy.mjs            # deploy via GenLayerJS (Node) — recommended
 ├── scripts/deploy_py.py          # deploy via GenLayerPY (Python) — alternative
+├── scripts/verify_deploy.py      # check a deploy tx status + get contract address
+├── DEPLOYMENT.md                 # deploy guide + Bradbury source-size gotcha
 ├── package.json                  # root-level: genlayer-js, for scripts/deploy.mjs
 ├── frontend/                     # Vite + React dApp (its own separate package.json)
 ├── requirements.txt              # gltest / genlayer-py / pytest / python-dotenv
