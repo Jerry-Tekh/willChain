@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Landing from "./Landing.jsx";
 import {
   readWillChain,
   writeWillChain,
@@ -587,7 +588,7 @@ function WillDetail({ willId, onChanged }) {
   );
 }
 
-export default function App() {
+function WillApp({ onHome }) {
   const { ids, loading, error, refresh } = useWillIds();
   const [selected, setSelected] = useState(null);
 
@@ -595,7 +596,10 @@ export default function App() {
     <div className="app">
       <header>
         <div className="header-top">
-          <h1>WillChain</h1>
+          <button className="brand-btn" onClick={onHome} aria-label="Back to home">
+            <span className="lp-logo" aria-hidden="true">◈</span>
+            <h1>WillChain</h1>
+          </button>
           <WalletButton />
         </div>
         <p className="muted">
@@ -642,4 +646,31 @@ export default function App() {
       </footer>
     </div>
   );
+}
+
+export default function App() {
+  // Simple two-view SPA: marketing landing -> dApp. Remembering the choice in
+  // sessionStorage keeps the user on the app across a refresh within a session.
+  const [view, setView] = useState(() => {
+    try {
+      return window.sessionStorage.getItem("willchain:view") === "app" ? "app" : "landing";
+    } catch {
+      return "landing";
+    }
+  });
+
+  const go = (v) => {
+    setView(v);
+    try {
+      window.sessionStorage.setItem("willchain:view", v);
+    } catch {
+      // sessionStorage unavailable — in-memory only
+    }
+    window.scrollTo(0, 0);
+  };
+
+  if (view === "landing") {
+    return <Landing onOpen={() => go("app")} chainLabel={CHAIN_LABEL} />;
+  }
+  return <WillApp onHome={() => go("landing")} />;
 }
