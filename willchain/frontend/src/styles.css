@@ -38,6 +38,38 @@ header {
   padding-bottom: 8px;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wallet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+}
+
+.wallet-connected {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #12332020;
+  border: 1px solid #1f5c3a;
+  color: #7de8a0;
+  white-space: nowrap;
+}
+
+.wallet-none {
+  color: #9098a8;
+}
+
+.wallet-none a {
+  color: #7fb0e6;
+}
+
 header h1 {
   margin: 0;
   font-size: clamp(1.5rem, 5vw, 2.25rem);
