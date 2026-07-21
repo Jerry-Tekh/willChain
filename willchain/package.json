@@ -7,7 +7,9 @@
   "scripts": {
     "deploy": "node scripts/deploy.mjs",
     "deploy:bradbury": "node scripts/deploy.mjs --chain testnet_bradbury",
-    "deploy:studionet": "node scripts/deploy.mjs --chain studionet"
+    "deploy:studionet": "node scripts/deploy.mjs --chain studionet",
+    "deploy:py": "python scripts/deploy_py.py --chain testnet_bradbury",
+    "verify": "python scripts/verify_deploy.py"
   },
   "dependencies": {
     "genlayer-js": ">=1.1.8"
