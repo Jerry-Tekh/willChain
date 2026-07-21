@@ -1,0 +1,4 @@
+# Repo-root ignores (project lives under willchain/, which has its own .gitignore)
+
+# Windows / Git Bash crash dumps
+*.stackdump

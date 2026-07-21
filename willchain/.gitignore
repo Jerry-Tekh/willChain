@@ -7,4 +7,11 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.venv_deploy/
 .pytest_cache/
+
+# Windows / Git Bash crash dumps
+*.stackdump
+
+# Local scratch/diagnostic scripts (not part of the project)
+_*.py
