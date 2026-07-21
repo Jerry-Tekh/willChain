@@ -32,7 +32,7 @@ try:
 except ImportError:
     pass  # python-dotenv not installed — fall back to real env vars only
 
-from genlayer_py import create_client
+from genlayer_py import create_account, create_client
 from genlayer_py.chains import (
     localnet,
     studionet,
@@ -74,7 +74,10 @@ def main():
     chain = CHAINS[args.chain]
 
     if args.private_key:
-        client = create_client(chain=chain, account=args.private_key)
+        # genlayer-py expects an account object (with a .address), not a raw
+        # private-key string — create_account() wraps the key into one.
+        account = create_account(account_private_key=args.private_key)
+        client = create_client(chain=chain, account=account)
     else:
         client = create_client(chain=chain)
 
