@@ -1,5 +1,83 @@
 import React, { useEffect, useState } from "react";
-import { readWillChain, writeWillChain, appealTransaction, CONTRACT_ADDRESS, CHAIN_LABEL } from "./genlayerClient.js";
+import {
+  readWillChain,
+  writeWillChain,
+  appealTransaction,
+  CONTRACT_ADDRESS,
+  CHAIN_LABEL,
+  hasInjectedWallet,
+  getConnectedAddress,
+  connectWallet,
+} from "./genlayerClient.js";
+
+function shortAddr(a) {
+  return a ? `${a.slice(0, 6)}...${a.slice(-4)}` : "";
+}
+
+/**
+ * Wallet connection status + button. Three states:
+ *  - no injected wallet: link to MetaMask, app falls back to a burner account
+ *  - wallet present, not connected: "Connect Wallet" button (MetaMask prompt)
+ *  - connected: shows the short address
+ */
+function WalletButton() {
+  const [address, setAddress] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Silent check on load — does NOT pop the MetaMask dialog.
+    getConnectedAddress().then(setAddress);
+    // Track account switches / disconnects made from the wallet UI itself.
+    if (hasInjectedWallet() && window.ethereum.on) {
+      const onAccounts = (accounts) => setAddress(accounts?.[0] || null);
+      window.ethereum.on("accountsChanged", onAccounts);
+      return () => window.ethereum.removeListener?.("accountsChanged", onAccounts);
+    }
+  }, []);
+
+  if (!hasInjectedWallet()) {
+    return (
+      <span className="wallet wallet-none" title="Using a temporary in-browser account. Install MetaMask to use your own.">
+        no wallet — demo account{" "}
+        <a href="https://metamask.io/download/" target="_blank" rel="noreferrer">
+          get MetaMask
+        </a>
+      </span>
+    );
+  }
+
+  if (address) {
+    return (
+      <span className="wallet wallet-connected" title={address}>
+        ● {shortAddr(address)}
+      </span>
+    );
+  }
+
+  return (
+    <span className="wallet">
+      <button
+        className="primary"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            setAddress(await connectWallet());
+          } catch (e) {
+            setError(String(e.message || e));
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? "Connecting..." : "Connect Wallet"}
+      </button>
+      {error && <span className="err"> {error}</span>}
+    </span>
+  );
+}
 
 function useWillIds() {
   const [ids, setIds] = useState([]);
@@ -516,7 +594,10 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>WillChain</h1>
+        <div className="header-top">
+          <h1>WillChain</h1>
+          <WalletButton />
+        </div>
         <p className="muted">
           AI-executed on-chain estate management, built on GenLayer.{" "}
           <span className="network-badge">network: {CHAIN_LABEL}</span>
