@@ -54,11 +54,61 @@ export async function connectWallet() {
 }
 
 /**
+ * Ensures the injected wallet is on the chain this app targets (Bradbury by
+ * default). If the wallet is on a different network (e.g. Ethereum mainnet,
+ * chain 1), this prompts MetaMask to switch — and, if the chain isn't known to
+ * the wallet yet, to add it first. No-op when there's no injected wallet
+ * (burner-account path) or the wallet is already on the right chain.
+ *
+ * This fixes the "Wallet is on chain 1 but client is configured for chain 4221"
+ * RPC error thrown when sending a transaction from the wrong network.
+ */
+export async function ensureChain() {
+  if (!hasInjectedWallet()) return;
+
+  const targetHex = "0x" + chain.id.toString(16);
+  const currentHex = await window.ethereum.request({ method: "eth_chainId" });
+  if (currentHex === targetHex) return;
+
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: targetHex }],
+    });
+  } catch (switchError) {
+    // 4902 = chain not added to the wallet yet; add it, then it becomes active.
+    if (switchError && (switchError.code === 4902 || switchError.code === -32603)) {
+      const rpcUrl = chain.rpcUrls?.default?.http?.[0];
+      const explorer = chain.blockExplorers?.default?.url;
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: targetHex,
+            chainName: chain.name || CHAIN_NAME,
+            nativeCurrency: chain.nativeCurrency || {
+              name: "GEN",
+              symbol: "GEN",
+              decimals: 18,
+            },
+            rpcUrls: rpcUrl ? [rpcUrl] : [],
+            blockExplorerUrls: explorer ? [explorer] : [],
+          },
+        ],
+      });
+    } else {
+      throw switchError;
+    }
+  }
+}
+
+/**
  * Returns a GenLayerJS client.
  *
  * - If MetaMask (window.ethereum) is present, the client is created with the
  *   connected address and MetaMask handles signing. If the wallet is not yet
- *   authorized this triggers the connection prompt.
+ *   authorized this triggers the connection prompt, and if it's on the wrong
+ *   network it is asked to switch to the target chain.
  * - Otherwise, a session-only burner account is generated in-memory
  *   (fine for localnet/studionet demos; NOT for real funds).
  */
@@ -66,6 +116,7 @@ export async function getClient() {
   if (hasInjectedWallet()) {
     const address =
       (await getConnectedAddress()) || (await connectWallet());
+    await ensureChain();
     return createClient({ chain, account: address });
   }
   if (!window.__willchainBurnerAccount) {
