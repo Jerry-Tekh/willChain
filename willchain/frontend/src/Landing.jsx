@@ -12,7 +12,7 @@ export default function Landing({ onOpen, chainLabel }) {
       <nav className="lp-nav">
         <a className="lp-brand" href="#top">
           <span className="lp-logo" aria-hidden="true">◈</span>
-          WillChain
+          AetherWill
         </a>
         <div className="lp-nav-links">
           <a href="#features">Features</a>
@@ -33,7 +33,7 @@ export default function Landing({ onOpen, chainLabel }) {
           </h1>
           <p className="lp-subtitle">
             Encode your will in plain English. When independent public evidence
-            confirms a passing, WillChain’s intelligent contract verifies it with
+            confirms a passing, AetherWill’s intelligent contract verifies it with
             AI consensus and distributes your on-chain assets — automatically,
             privately, and without a middleman.
           </p>
@@ -71,7 +71,7 @@ export default function Landing({ onOpen, chainLabel }) {
 
       {/* Feature trio */}
       <section className="lp-section" id="features">
-        <h2 className="lp-h2">Why WillChain</h2>
+        <h2 className="lp-h2">Why AetherWill</h2>
         <p className="lp-lead">
           A decentralized protocol for privacy-preserving, self-executing digital wills.
         </p>
@@ -115,7 +115,7 @@ export default function Landing({ onOpen, chainLabel }) {
             ["AI death verification", "Multiple validators independently assess public evidence and must agree."],
             ["Non-custodial & flexible", "You keep control until execution; revoke any active will anytime."],
             ["Conditional bequests", "Attach conditions like “if over 18”, evaluated at execution time."],
-            ["No fees, ever", "WillChain will never charge subscriptions or setup fees."],
+            ["No fees, ever", "AetherWill will never charge subscriptions or setup fees."],
           ].map(([t, b]) => (
             <div className="lp-mini" key={t}>
               <div className="lp-check" aria-hidden="true">✓</div>
@@ -150,7 +150,7 @@ export default function Landing({ onOpen, chainLabel }) {
       {/* Closing CTA */}
       <section className="lp-cta" id="faq">
         <div className="lp-cta-inner">
-          <h2>Begin your journey with WillChain</h2>
+          <h2>Begin your journey with AetherWill</h2>
           <p>
             Connect a wallet on {chainLabel} and create your first on-chain will
             in minutes. Not legal advice — a technical execution layer for assets
@@ -164,11 +164,11 @@ export default function Landing({ onOpen, chainLabel }) {
 
       <footer className="lp-footer">
         <div className="lp-brand">
-          <span className="lp-logo" aria-hidden="true">◈</span> WillChain
+          <span className="lp-logo" aria-hidden="true">◈</span> AetherWill
         </div>
         <p className="muted">
           AI-executed on-chain estate management, built on GenLayer. © {" "}
-          {"2026"} WillChain. Not legal advice.
+          {"2026"} AetherWill. Not legal advice.
         </p>
       </footer>
     </div>

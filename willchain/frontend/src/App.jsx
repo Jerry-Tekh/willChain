@@ -764,7 +764,7 @@ function WillApp({ onHome }) {
         <div className="header-top">
           <button className="brand-btn" onClick={onHome} aria-label="Back to home">
             <span className="lp-logo" aria-hidden="true">◈</span>
-            <h1>WillChain</h1>
+            <h1>AetherWill</h1>
           </button>
           <WalletButton />
         </div>
@@ -805,7 +805,7 @@ function WillApp({ onHome }) {
 
       <footer className="muted">
         <p>
-          WillChain is a technical execution layer, not a substitute for legal
+          AetherWill is a technical execution layer, not a substitute for legal
           advice. Its legal validity as a will varies by jurisdiction — see
           README "Legal &amp; privacy considerations".
         </p>
