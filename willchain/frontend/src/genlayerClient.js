@@ -136,11 +136,38 @@ export async function readWillChain(functionName, args = []) {
     );
   }
   const client = await getClient();
-  return client.readContract({
-    address: CONTRACT_ADDRESS,
-    functionName,
-    args,
-  });
+  // Reads occasionally hit transient gateway errors right after a write has
+  // been accepted; retry a couple of times before surfacing the failure.
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await client.readContract({
+        address: CONTRACT_ADDRESS,
+        functionName,
+        args,
+      });
+    } catch (e) {
+      lastErr = e;
+      await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * Extracts the GenVM execution result from a receipt, tolerating the
+ * snake_case / camelCase differences between node and SDK versions.
+ * Returns e.g. "FINISHED_WITH_RETURN", "FINISHED_WITH_ERROR", or null.
+ */
+function executionResultOf(receipt) {
+  if (!receipt || typeof receipt !== "object") return null;
+  return (
+    receipt.tx_execution_result_name ??
+    receipt.txExecutionResultName ??
+    receipt.tx_execution_result ??
+    receipt.txExecutionResult ??
+    null
+  );
 }
 
 export async function writeWillChain(functionName, args = [], value = 0) {
@@ -169,6 +196,17 @@ export async function writeWillChain(functionName, args = [], value = 0) {
     retries: 100,
     interval: 5000,
   });
+  // A transaction can reach ACCEPTED by consensus while its GenVM execution
+  // actually FAILED (e.g. an assert in the contract). In that case nothing was
+  // persisted, so reporting "created" would be wrong and the refreshed list
+  // would (correctly) show nothing. Surface the real failure instead.
+  const execResult = executionResultOf(receipt);
+  if (execResult && String(execResult).toUpperCase().includes("ERROR")) {
+    throw new Error(
+      `Transaction was accepted but the contract call failed (${execResult}). ` +
+        `Nothing was saved. Check your inputs and try again.`
+    );
+  }
   return { hash, receipt };
 }
 
