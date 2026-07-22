@@ -84,13 +84,45 @@ function useWillIds() {
   const [ids, setIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // will_ids created this session, shown immediately even if the on-chain read
+  // hasn't caught up yet. Merged with the chain result and reconciled on refresh.
+  const [optimistic, setOptimistic] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem("willchain:recentIds") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const addOptimistic = (id) => {
+    if (!id) return;
+    setOptimistic((prev) => {
+      const next = prev.includes(id) ? prev : [...prev, id];
+      try {
+        window.localStorage.setItem("willchain:recentIds", JSON.stringify(next));
+      } catch {
+        // ignore storage failures
+      }
+      return next;
+    });
+  };
 
   const refresh = async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await readWillChain("list_will_ids");
-      setIds(result || []);
+      const result = (await readWillChain("list_will_ids")) || [];
+      setIds(result);
+      // Drop optimistic ids the chain now confirms, so the list de-dupes.
+      setOptimistic((prev) => {
+        const next = prev.filter((id) => !result.includes(id));
+        try {
+          window.localStorage.setItem("willchain:recentIds", JSON.stringify(next));
+        } catch {
+          // ignore
+        }
+        return next;
+      });
     } catch (e) {
       setError(String(e.message || e));
     } finally {
@@ -102,7 +134,9 @@ function useWillIds() {
     refresh();
   }, []);
 
-  return { ids, loading, error, refresh };
+  // De-duplicated union: confirmed on-chain ids first, then any pending ones.
+  const merged = [...ids, ...optimistic.filter((id) => !ids.includes(id))];
+  return { ids: merged, loading, error, refresh, addOptimistic };
 }
 
 function Banner() {
@@ -166,10 +200,11 @@ function CreateWillForm({ onCreated }) {
         ],
         Math.round(Number(form.escrow || 0))
       );
-      setStatus({ ok: true, msg: `Will "${form.willId}" created.` });
+      const createdId = form.willId;
+      setStatus({ ok: true, msg: `Will "${createdId}" created.` });
       setForm(emptyForm);
       setBeneficiaries(emptyBeneficiaries);
-      onCreated?.();
+      onCreated?.(createdId);
     } catch (e) {
       setStatus({ ok: false, msg: String(e.message || e) });
     } finally {
@@ -589,8 +624,20 @@ function WillDetail({ willId, onChanged }) {
 }
 
 function WillApp({ onHome }) {
-  const { ids, loading, error, refresh } = useWillIds();
+  const { ids, loading, error, refresh, addOptimistic } = useWillIds();
   const [selected, setSelected] = useState(null);
+
+  // After a create: show the new id immediately, then refresh a few times to
+  // let the on-chain list catch up (a just-accepted write can lag a read).
+  const handleCreated = (newId) => {
+    if (newId) {
+      addOptimistic(newId);
+      setSelected(newId);
+    }
+    refresh();
+    setTimeout(refresh, 4000);
+    setTimeout(refresh, 12000);
+  };
 
   return (
     <div className="app">
@@ -633,7 +680,7 @@ function WillApp({ onHome }) {
         </section>
 
         <section>
-          <CreateWillForm onCreated={refresh} />
+          <CreateWillForm onCreated={handleCreated} />
         </section>
       </main>
 
