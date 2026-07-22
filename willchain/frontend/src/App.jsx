@@ -16,6 +16,41 @@ function shortAddr(a) {
 }
 
 /**
+ * Turns the on-chain result of a death claim into a human message. A death
+ * claim's transaction always "succeeds" as a transaction, but the AI verdict
+ * is separate: only a high-confidence, identity-matched, independently-sourced
+ * confirmation moves the will out of "active". Otherwise it stays active on
+ * purpose so a stronger evidence set can be filed later.
+ */
+function describeClaimOutcome(will) {
+  if (!will) {
+    return "Claim submitted. Reloading status…";
+  }
+  if (will.status === "active") {
+    const r = will.last_claim_result || {};
+    const reasons = [];
+    if (r.death_confirmed === false) reasons.push("death not confirmed by the evidence");
+    else if (r.confidence && r.confidence !== "high") reasons.push(`confidence was "${r.confidence}", not high`);
+    if (r.person_identity_match === false) reasons.push("the evidence may not refer to this exact person");
+    if (r.sources_independent === false) reasons.push("the sources weren’t independent enough");
+    const why = reasons.length ? ` (${reasons.join("; ")})` : "";
+    return (
+      `Claim reviewed, but the AI did NOT confirm the death${why}. ` +
+      `The will stays active — you can file again with stronger, independent evidence.`
+    );
+  }
+  if (will.status === "pending_execution") {
+    return will.cosigner && !will.cosigned
+      ? "Death confirmed. Execution is paused pending the cosigner’s release."
+      : "Death confirmed. Executing the will…";
+  }
+  if (will.status === "executed") {
+    return "Death confirmed and the estate has been distributed to beneficiaries.";
+  }
+  return `Claim processed. Will status is now "${will.status}".`;
+}
+
+/**
  * Wallet connection status + button. Three states:
  *  - no injected wallet: link to MetaMask, app falls back to a burner account
  *  - wallet present, not connected: "Connect Wallet" button (MetaMask prompt)
@@ -413,9 +448,12 @@ function WillDetail({ willId, onChanged }) {
     setError(null);
     try {
       const raw = await readWillChain("get_will", [willId]);
-      setWill(JSON.parse(raw));
+      const parsed = JSON.parse(raw);
+      setWill(parsed);
+      return parsed;
     } catch (e) {
       setError(String(e.message || e));
+      return null;
     }
   };
 
@@ -432,8 +470,15 @@ function WillDetail({ willId, onChanged }) {
       if (isDeathClaim && result?.hash) {
         rememberDeathClaimTx(result.hash);
       }
-      setStatus({ ok: true, msg: `${label} succeeded.` });
-      await load();
+      // Reload first so we can report the ACTUAL on-chain outcome, not just
+      // "the transaction ran". A death claim always executes successfully as a
+      // transaction, but whether it CONFIRMED the death is a separate result.
+      const updated = await load();
+      if (isDeathClaim) {
+        setStatus({ ok: true, msg: describeClaimOutcome(updated) });
+      } else {
+        setStatus({ ok: true, msg: `${label} succeeded.` });
+      }
       onChanged?.();
     } catch (e) {
       setStatus({ ok: false, msg: `${label} failed: ${e.message || e}` });
@@ -470,9 +515,36 @@ function WillDetail({ willId, onChanged }) {
         ))}
       </ul>
       {will.last_claim_result && (
-        <p className="muted">
-          Last claim result: {JSON.stringify(will.last_claim_result)}
-        </p>
+        <div className="claim-result">
+          <strong>Last AI verdict:</strong>
+          <ul className="claim-verdict">
+            <li>
+              death confirmed:{" "}
+              <b className={will.last_claim_result.death_confirmed ? "ok" : "err"}>
+                {String(will.last_claim_result.death_confirmed)}
+              </b>
+            </li>
+            <li>confidence: <b>{will.last_claim_result.confidence}</b></li>
+            <li>
+              identity match:{" "}
+              <b className={will.last_claim_result.person_identity_match ? "ok" : "err"}>
+                {String(will.last_claim_result.person_identity_match)}
+              </b>
+            </li>
+            <li>
+              sources independent:{" "}
+              <b className={will.last_claim_result.sources_independent ? "ok" : "err"}>
+                {String(will.last_claim_result.sources_independent)}
+              </b>
+            </li>
+          </ul>
+          {will.status === "active" && (
+            <p className="muted">
+              All four must be true (with high confidence) to confirm a death.
+              File again with stronger, independent evidence to try once more.
+            </p>
+          )}
+        </div>
       )}
       {will.cosigner && (
         <p>
