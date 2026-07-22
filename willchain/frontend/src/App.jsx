@@ -150,7 +150,7 @@ function Banner() {
   );
 }
 
-function CreateWillForm({ onCreated }) {
+function CreateWillForm({ onCreated, existingIds }) {
   const emptyForm = {
     willId: "",
     name: "",
@@ -182,29 +182,76 @@ function CreateWillForm({ onCreated }) {
     setBusy(true);
     setStatus(null);
     try {
-      const totalPct = beneficiaries.reduce((s, b) => s + Number(b.share_pct || 0), 0);
+      // Pre-flight validation mirroring the contract's own asserts, so the
+      // user gets a specific reason BEFORE spending gas — the GenVM only
+      // returns a bare "FINISHED_WITH_ERROR" (exit code 1) on a failed assert,
+      // with no message, so validating here is the only way to be specific.
+      const willId = form.willId.trim();
+      if (!willId) {
+        throw new Error("Will ID cannot be empty.");
+      }
+      if (existingIds?.some((id) => id === willId)) {
+        throw new Error(
+          `Will ID "${willId}" already exists. Every will needs a unique ID — try another (e.g. "${willId}-2").`
+        );
+      }
+
+      const cleaned = beneficiaries
+        .map((b) => ({
+          wallet: (b.wallet || "").trim(),
+          share_pct: Math.round(Number(b.share_pct) || 0),
+          condition: (b.condition || "").trim(),
+        }))
+        .filter((b) => b.wallet || b.share_pct); // drop fully-empty rows
+
+      if (cleaned.length === 0) {
+        throw new Error("Add at least one beneficiary with a wallet and share.");
+      }
+      const seen = new Set();
+      for (const b of cleaned) {
+        if (!b.wallet) {
+          throw new Error("Every beneficiary needs a wallet address.");
+        }
+        if (!/^0x[0-9a-fA-F]{40}$/.test(b.wallet)) {
+          throw new Error(`"${b.wallet}" is not a valid 0x… wallet address.`);
+        }
+        const norm = b.wallet.toLowerCase();
+        if (seen.has(norm)) {
+          throw new Error(`Duplicate beneficiary wallet: ${b.wallet}`);
+        }
+        seen.add(norm);
+        if (!(b.share_pct > 0 && b.share_pct <= 100)) {
+          throw new Error(
+            `Each share must be a whole number between 1 and 100 (got ${b.share_pct}).`
+          );
+        }
+      }
+      const totalPct = cleaned.reduce((s, b) => s + b.share_pct, 0);
       if (totalPct !== 100) {
         throw new Error(`Beneficiary shares must sum to 100 (currently ${totalPct}).`);
       }
+      if (form.cosigner && !/^0x[0-9a-fA-F]{40}$/.test(form.cosigner.trim())) {
+        throw new Error("Cosigner must be a valid 0x… address, or left blank.");
+      }
+
       await writeWillChain(
         "create_will",
         [
-          form.willId,
+          willId,
           form.name,
           form.dob,
           form.nationality,
           form.city,
-          JSON.stringify(beneficiaries),
+          JSON.stringify(cleaned),
           form.narrative,
-          form.cosigner,
+          form.cosigner.trim(),
         ],
         Math.round(Number(form.escrow || 0))
       );
-      const createdId = form.willId;
-      setStatus({ ok: true, msg: `Will "${createdId}" created.` });
+      setStatus({ ok: true, msg: `Will "${willId}" created.` });
       setForm(emptyForm);
       setBeneficiaries(emptyBeneficiaries);
-      onCreated?.(createdId);
+      onCreated?.(willId);
     } catch (e) {
       setStatus({ ok: false, msg: String(e.message || e) });
     } finally {
@@ -680,7 +727,7 @@ function WillApp({ onHome }) {
         </section>
 
         <section>
-          <CreateWillForm onCreated={handleCreated} />
+          <CreateWillForm onCreated={handleCreated} existingIds={ids} />
         </section>
       </main>
 
